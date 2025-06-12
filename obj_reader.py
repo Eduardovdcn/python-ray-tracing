@@ -1,5 +1,5 @@
-from point import Point
-from vector import Vector
+from point import Ponto
+from vector import Vetor
 from color_map import Colormap
 import os
 
@@ -7,10 +7,10 @@ class Face:
     def __init__(self):
         self.vertice_indices = [0, 0, 0]
         self.normal_indices = [0, 0, 0]
-        self.ka = Vector(0, 0, 0)
-        self.kd = Vector(0, 0, 0)
-        self.ks = Vector(0, 0, 0)
-        self.ke = Vector(0, 0, 0)
+        self.ka = Vetor(0, 0, 0)
+        self.kd = Vetor(0, 0, 0)
+        self.ks = Vetor(0, 0, 0)
+        self.ke = Vetor(0, 0, 0)
         self.ns = 0
         self.ni = 0
         self.d = 0
@@ -63,7 +63,7 @@ class ObjReader:
                     self.cur_material = self.colormap.get_material(material_name)
 
                 elif line.startswith('v '):
-                    self.vertices.append(Point(*map(float, line[2:].split())))
+                    self.vertices.append(Ponto(*map(float, line[2:].split())))
 
                 elif line.startswith('vn '):
                     pass

@@ -1,11 +1,11 @@
-from vector import Vector
+from vector import Vetor
 
 class Material:
     def __init__(self):
-        self.ka = Vector(0, 0, 0)
-        self.kd = Vector(0, 0, 0)
-        self.ks = Vector(0, 0, 0)
-        self.ke = Vector(0, 0, 0)
+        self.ka = Vetor(0, 0, 0)
+        self.kd = Vetor(0, 0, 0)
+        self.ks = Vetor(0, 0, 0)
+        self.ke = Vetor(0, 0, 0)
         self.ns = 0
         self.ni = 0
         self.d = 0
@@ -37,13 +37,13 @@ class Colormap:
                     self.cur_material = line.split()[1]
                     self.materials[self.cur_material] = Material()
                 elif line.startswith('Ka '):
-                    self.materials[self.cur_material].ka = Vector(*map(float, line[2:].split()))
+                    self.materials[self.cur_material].ka = Vetor(*map(float, line[2:].split()))
                 elif line.startswith('Kd '):
-                    self.materials[self.cur_material].kd = Vector(*map(float, line[2:].split()))
+                    self.materials[self.cur_material].kd = Vetor(*map(float, line[2:].split()))
                 elif line.startswith('Ks '):
-                    self.materials[self.cur_material].ks = Vector(*map(float, line[2:].split()))
+                    self.materials[self.cur_material].ks = Vetor(*map(float, line[2:].split()))
                 elif line.startswith('Ke '):
-                    self.materials[self.cur_material].ke = Vector(*map(float, line[2:].split()))
+                    self.materials[self.cur_material].ke = Vetor(*map(float, line[2:].split()))
                 elif line.startswith('Ns '):
                     self.materials[self.cur_material].ns = float(line[2:])
                 elif line.startswith('Ni '):
