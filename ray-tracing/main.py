@@ -20,8 +20,8 @@ def main():
     )
 
     # Cria objetos
-    esfera = Esfera(raio=2, centro=Ponto(0, 0, 0), cor=Vetor(255, 0, 0))
-    plano = Plano(ponto=Ponto(0, -3, 0), vetorNormal=Vetor(0, 1, 0), cor=Vetor(200, 200, 200))
+    esfera = Esfera(raio=4, centro=Ponto(0, 1, 0), cor=Vetor(255, 0, 0))
+    plano = Plano(ponto=Ponto(0, -1, 0), vetorNormal=Vetor(0, 1, 0), cor=Vetor(200, 200, 200))
     objetos = [esfera, plano]
 
     # Cria imagem 
