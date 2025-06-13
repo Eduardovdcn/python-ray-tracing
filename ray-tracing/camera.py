@@ -40,10 +40,3 @@ class Camera:
         direcao = ponto - self.C.to_vetor()
         return Ray(self.C, direcao)
         
-    def to_vetor(self):
-        from vector import Vetor
-        return Vetor(self.x, self.y, self.z)
-
-    def __sub__(self, other):
-        # Permite Vetor - Vetor ou Vetor - Ponto
-        return Vetor(self.x - other.x, self.y - other.y, self.z - other.z)
