@@ -38,3 +38,31 @@ class Plano:
         if t < 0:
             return None
         return t
+
+class Triangulo:
+    def __init__(self, v1, v2, v3, cor):
+        self.v1 = v1
+        self.v2 = v2
+        self.v3 = v3
+        self.normal = (v2.__sub__(v1)).produto_vetorial(v3.__sub__(v1)).normalizar()
+        self.cor = cor
+
+    def intersect(self, posCamera, vetorDiretor):
+        # Implementar a interseção com o triângulo
+        pass
+
+
+class MalhaT:
+    def __init__(self, faces, vertices):
+        self.vertices = vertices
+        self.faces = faces
+        self.numVertices = len(vertices)
+        self.numFaces = len(faces)
+        self.triangulos = []
+        self.numTriangulos = len(self.triangulos)
+        self.normaisTriangulos = []
+        self.normaisVertices = []
+
+    def intersect(self, posCamera, vetorDiretor):
+        # Implementar a interseção com a malha
+        pass
