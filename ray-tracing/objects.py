@@ -59,9 +59,24 @@ class MalhaT:
         self.numVertices = len(vertices)
         self.numFaces = len(faces)
         self.triangulos = []
-        self.numTriangulos = len(self.triangulos)
+        self.numTriangulos = 0
         self.normaisTriangulos = []
         self.normaisVertices = []
+
+    def calcular_normais_vertices(self):
+        # Para cada vértice, verifica em que triangulos esta e soma as normais desses triangulos
+        for vertice in (self.vertices):
+            soma_normal = None
+            for triangulo in (self.triangulos):
+                # Se o vértice faz parte do triângulo
+                if (triangulo.v1 == vertice or triangulo.v2 == vertice or triangulo.v3 == vertice):
+                    if soma_normal is None:
+                        soma_normal = triangulo.normal
+                    else:
+                        soma_normal = soma_normal.soma(triangulo.normal)
+            if soma_normal is not None:
+                self.normaisVertices.append(soma_normal.normalizar())
+
 
     def intersect(self, posCamera, vetorDiretor):
         # Implementar a interseção com a malha
