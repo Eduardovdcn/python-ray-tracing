@@ -42,7 +42,7 @@ def main():
         malha.normaisTriangulos.append(triangulo.normal)
         malha.numTriangulos += 1
 
-    Teste
+    # Teste
     print("Triângulos criados na malha:")
     for i, triangulo in enumerate(malha.triangulos):
         print(f"Triângulo {i}:")
