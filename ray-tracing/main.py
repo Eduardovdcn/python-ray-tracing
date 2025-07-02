@@ -42,16 +42,16 @@ def main():
         malha.normaisTriangulos.append(triangulo.normal)
         malha.numTriangulos += 1
 
-    # Teste
-    # print("Triângulos criados na malha:")
-    # for i, triangulo in enumerate(malha.triangulos):
-    #     print(f"Triângulo {i}:")
-    #     print(f"  v1: {triangulo.v1}")
-    #     print(f"  v2: {triangulo.v2}")
-    #     print(f"  v3: {triangulo.v3}")
-    #     print(f"  normal: {triangulo.normal}")
-    #     print(f"  cor: {triangulo.cor}")
-    #     print()
+    Teste
+    print("Triângulos criados na malha:")
+    for i, triangulo in enumerate(malha.triangulos):
+        print(f"Triângulo {i}:")
+        print(f"  v1: {triangulo.v1}")
+        print(f"  v2: {triangulo.v2}")
+        print(f"  v3: {triangulo.v3}")
+        print(f"  normal: {triangulo.normal}")
+        print(f"  cor: {triangulo.cor}")
+        print()
 
     objetos = [esfera, plano, malha]
 
