@@ -1,4 +1,5 @@
 import math
+from vector import Vetor
 
 class Ponto:
     """
@@ -22,8 +23,10 @@ class Ponto:
         return f"Ponto({self.x}, {self.y}, {self.z})"
     
     def __sub__(self, other):
-        from vector import Vetor
         return Vetor(self.x - other.x, self.y - other.y, self.z - other.z)
+    
+    def __soma__(self, other):
+        return Vetor(self.x + other.x, self.y + other.y, self.z + other.z)
 
     @staticmethod
     def somaBaricentrica(p1, w1, p2, w2, p3, w3):
