@@ -45,8 +45,8 @@ def main():
 
     malha.calcular_normais_vertices()
 
-    triangulo_teste = Triangulo(Ponto(1, 0, 0), Ponto(0, 1, 0), Ponto(0, 0, 1), Vetor(255, 255, 0))
-    objetos = [triangulo_teste]
+    triangulo_teste = Triangulo(Ponto(-2, -1, -1), Ponto(-2, 1, -1), Ponto(-2, 0, 1), Vetor(255, 255, 0))
+    objetos = [plano, triangulo_teste] 
     # Cria imagem
     imagem = np.zeros((camera.Vres, camera.Hres, 3), dtype=np.uint8)
 
@@ -63,7 +63,8 @@ def main():
                         if t < menor_t:
                             menor_t = t
                             cor_pixel = resultado[4]
-                imagem[i, j] = [cor_pixel.x, cor_pixel.y, cor_pixel.z]
+
+            imagem[i, j] = [cor_pixel.x, cor_pixel.y, cor_pixel.z]
 
     # Exporta para PPM
     with open("output.ppm", "w") as f:

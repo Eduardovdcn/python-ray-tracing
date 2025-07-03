@@ -41,7 +41,7 @@ class Plano:
         if temp == 0:
             condicao = False
             return (condicao, None, None, None, self.cor)
-        origemToCentro = posCamera - self.ponto
+        origemToCentro = self.ponto - posCamera
         t = origemToCentro.produto_escalar(self.vetorNormal) / temp
         if t < 0:
             condicao = False
@@ -97,7 +97,6 @@ class Triangulo:
         alfa = (d11 * d20 - d01 * d21) / denom
         beta = (d00 * d21 - d01 * d20) / denom
         gama = 1.0 - alfa - beta
-        
         # Verifica se o ponto esta dentro do triangulo
         if alfa >= 1e-10 and beta >= 1e-10 and gama >= 1e-10:
             return (True, t, self.normal, ponto, cor)
