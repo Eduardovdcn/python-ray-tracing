@@ -47,8 +47,14 @@ class Vetor:
     def normalizar(self):
         n = self.norma()
         if n == 0:
-            raise ValueError("Não é possível normalizar o vetor nulo.")
+            # Retorna um vetor nulo se a norma for zero para evitar divisão por zero.
+            return Vetor(0, 0, 0)
         return Vetor(self.x / n, self.y / n, self.z / n)
 
     def __neg__(self):
         return Vetor(-self.x, -self.y, -self.z)
+        
+    def transform(self, matrix):
+        """Aplica uma matriz de transformação a este vetor."""
+        return matrix.apply_to_vector(self)
+

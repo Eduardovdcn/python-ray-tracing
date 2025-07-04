@@ -1,5 +1,4 @@
 import math
-
 class Ponto:
     """
     Representa um ponto em um espaço tridimensional.
@@ -42,3 +41,8 @@ class Ponto:
     def to_vetor(self):
         from vector import Vetor
         return Vetor(self.x, self.y, self.z)
+    
+    def transform(self, matrix):
+        """Aplica uma matriz de transformação a este ponto."""
+        return matrix.apply_to_point(self)
+

@@ -1,84 +1,100 @@
+import numpy as np
 from point import Ponto
 from vector import Vetor
 from camera import Camera
-from objects import Esfera, Plano, Triangulo, MalhaT
+from objects import Esfera, Plano, MalhaT
 from obj_reader import ObjReader
-import numpy as np
+from matrix import Matrix
 
-def cor_para_ppm(cor):
-    # Garante que os valores estejam entre 0 e 255 e converte para int
-    return f"{int(max(0, min(255, cor.x)))} {int(max(0, min(255, cor.y)))} {int(max(0, min(255, cor.z)))}"
-
-def main():
-    reader = ObjReader("C:/Users/eduar/OneDrive/Documentos/GitHub/python-ray-tracing/inputs/icosahedron.obj")
-
-    # Configura a câmera
-    camera = Camera(
-        C=Ponto(0, 0, 10),      # Posição da câmera
-        M=Ponto(0, 0, 0),       # Mira (olhando para a origem)
-        Vup=Vetor(0, 1, 0),     # Vetor "para cima"
-        d=1,                    # Distância do plano de projeção
-        Vres=200,               # Resolução vertical
-        Hres=200                # Resolução horizontal
-    )
-
-    # Cria objetos
-    esfera = Esfera(raio=4, centro=Ponto(0, 1, 0), cor=Vetor(255, 0, 0))
-    plano = Plano(ponto=Ponto(0, -1, 0), vetorNormal=Vetor(0, 1, 0), cor=Vetor(200, 200, 200))
-
-    # Cria a malha e adiciona os triangulos 
-    faces = reader.get_faces()
-    malha = MalhaT(faces = faces, vertices = reader.get_vertices())
-
-    # Cada face da malha cria um triangulo
-    for face in faces:
-        idx1, idx2, idx3 = face.vertice_indices
-        v1 = reader.get_vertices()[idx1]
-        v2 = reader.get_vertices()[idx2]
-        v3 = reader.get_vertices()[idx3]
-        cor = face.kd
-        triangulo = Triangulo(v1, v2, v3, cor)
-        malha.triangulos.append(triangulo)
-        malha.normaisTriangulos.append(triangulo.normal)
-        malha.numTriangulos += 1
-
-    # Calcula as normais dos vertices da malha
-    malha.calcular_normais_vertices()
-
-    # Teste
-    # print("Triângulos criados na malha:")
-    # for i, triangulo in enumerate(malha.triangulos):
-    #     print(f"Triângulo {i}:")
-    #     print(f"  v1: {triangulo.v1}")
-    #     print(f"  v2: {triangulo.v2}")
-    #     print(f"  v3: {triangulo.v3}")
-    #     print(f"  normal: {triangulo.normal}")
-    #     print(f"  cor: {triangulo.cor}")
-
-    objetos = [esfera, plano, malha]
-
-    # Cria imagem 
+def render_scene(camera, objetos, filename):
+    """Renderiza uma cena e salva em um arquivo PPM."""
     imagem = np.zeros((camera.Vres, camera.Hres, 3), dtype=np.uint8)
-
+    
     for i in range(camera.Vres):
         for j in range(camera.Hres):
             ray = camera.get_ray(j, i)
-            cor_pixel = Vetor(0, 0, 0)  # Cor de fundo padrão
+            cor_pixel = Vetor(20, 20, 20)  # Cor de fundo (cinza escuro)
             menor_t = float('inf')
+            obj_atingido = None
+
             for obj in objetos:
                 t = obj.intersect(ray.origem, ray.direcao)
                 if t is not None and t < menor_t:
                     menor_t = t
-                    cor_pixel = obj.cor
-            imagem[i, j] = [cor_pixel.x, cor_pixel.y, cor_pixel.z]
+                    obj_atingido = obj
+            
+            if obj_atingido:
+                # Converte a cor do objeto (normalizada entre 0-1) para 0-255
+                cor = obj_atingido.cor
+                if max(cor.x, cor.y, cor.z) <= 1.0:
+                     cor_pixel = cor.mult_escalar(255)
+                else:
+                     cor_pixel = cor
+            
+            imagem[i, j] = [int(cor_pixel.x), int(cor_pixel.y), int(cor_pixel.z)]
 
-    # Exporta para PPM
-    with open("output.ppm", "w") as f:
+    with open(filename, "w") as f:
         f.write(f"P3\n{camera.Hres} {camera.Vres}\n255\n")
-        for i in range(camera.Vres):
-            for j in range(camera.Hres):
-                f.write(f"{imagem[i, j, 0]} {imagem[i, j, 1]} {imagem[i, j, 2]} ")
+        for row in imagem:
+            for pixel in row:
+                f.write(f"{pixel[0]} {pixel[1]} {pixel[2]} ")
             f.write("\n")
+    print(f"Imagem renderizada e salva como '{filename}'")
+
+
+def main():
+    obj_path = r"C:\Users\Leo\Documents\GitHub\python-ray-tracing\inputs\icosahedron.obj"
+    try:
+        reader = ObjReader(obj_path)
+    except FileNotFoundError:
+        print(f"Erro: Arquivo .obj não encontrado em '{obj_path}'")
+        print("Por favor, verifique o caminho e tente novamente.")
+        return
+
+    # Calcula o centro do icosaedro a partir dos vértices do .obj
+    vertices = reader.get_vertices()
+    n = len(vertices)
+    centro_x = sum(v.x for v in vertices) / n
+    centro_y = sum(v.y for v in vertices) / n
+    centro_z = sum(v.z for v in vertices) / n
+    centro = Ponto(centro_x, centro_y, centro_z)
+
+    # Configura a câmera centralizada no objeto
+    camera = Camera(
+        C=Ponto(centro.x, centro.y, centro.z + 10),  # Posição afastada no eixo Z
+        M=centro,                                    # Mira para o centro real do icosaedro
+        Vup=Vetor(0, 1, 0),
+        d=1,
+        Vres=400,
+        Hres=400
+    )
+
+    # --- CENA 1: OBJETO ORIGINAL ---
+    print("Renderizando a cena com o objeto original...")
+    malha_original = MalhaT(faces=reader.get_faces(), vertices=reader.get_vertices())
+    
+    objetos_originais = [malha_original]
+    render_scene(camera, objetos_originais, "output_original.ppm")
+
+    # --- CENA 2: OBJETO TRANSFORMADO ---
+    print("\nRenderizando a cena com o objeto transformado...")
+    
+    # Cria uma nova malha para a transformação
+    malha_transformada = MalhaT(faces=reader.get_faces(), vertices=reader.get_vertices())
+
+    # Cria matrizes de transformação
+    matriz_rotacao = Matrix.make_rotation_y(45) * Matrix.make_rotation_x(45)
+    matriz_translacao = Matrix.make_translation(1, -0.5, 0)
+    
+    # Combina as transformações (escala -> rotação -> translação)
+    matriz_transformacao_final = matriz_translacao * matriz_rotacao
+    
+    # Aplica a transformação à malha
+    malha_transformada.transform(matriz_transformacao_final)
+
+    objetos_transformados = [malha_transformada]
+    render_scene(camera, objetos_transformados, "output_transformada.ppm")
+
 
 if __name__ == "__main__":
     main()
