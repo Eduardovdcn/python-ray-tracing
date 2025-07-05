@@ -104,11 +104,9 @@ class Triangulo:
             return (False, None, None, None, self.cor)
 
 class MalhaT:
-    def __init__(self, faces, vertices):
+    def __init__(self, vertices):
         self.vertices = vertices
-        self.faces = faces
         self.numVertices = len(vertices)
-        self.numFaces = len(faces)
         self.triangulos = []
         self.numTriangulos = 0
         self.normaisTriangulos = []
