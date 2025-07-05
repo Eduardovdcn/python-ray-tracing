@@ -104,13 +104,30 @@ class Triangulo:
             return (False, None, None, None, self.cor)
 
 class MalhaT:
-    def __init__(self, vertices):
+    def __init__(self, faces, vertices):
         self.vertices = vertices
         self.numVertices = len(vertices)
+        self.faces = faces
+        self.numFaces = len(faces)
         self.triangulos = []
         self.numTriangulos = 0
         self.normaisTriangulos = []
         self.normaisVertices = []
+        self._build_triangles()
+        self.calcular_normais_vertices()
+        self.centro = self.calcular_centro()
+
+    def _build_triangles(self):
+        for face in self.faces:
+            idx1, idx2, idx3 = face.vertice_indices
+            v1 = self.vertices[idx1]
+            v2 = self.vertices[idx2]
+            v3 = self.vertices[idx3]
+            cor = face.kd.mult_escalar(255)  # Multiplica por 255 para converter de [0, 1] para [0, 255] 
+            triangulo = Triangulo(v1, v2, v3, cor)
+            self.triangulos.append(triangulo)
+            self.normaisTriangulos.append(triangulo.normal)
+            self.numTriangulos += 1
 
     def calcular_normais_vertices(self):
         # Para cada vertice, verifica em que triangulos esta e soma as normais desses triangulos
@@ -145,4 +162,12 @@ class MalhaT:
             return (False, None, None, None, Vetor(0, 0, 0)) 
          
         return menor_resultado
+    
+    def calcular_centro(self):
+        from point import Ponto
+        centro_x = sum(v.x for v in self.vertices) / self.numVertices
+        centro_y = sum(v.y for v in self.vertices) / self.numVertices
+        centro_z = sum(v.z for v in self.vertices) / self.numVertices
+        return Ponto(centro_x, centro_y, centro_z)
+    
 

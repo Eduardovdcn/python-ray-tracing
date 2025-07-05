@@ -50,49 +50,26 @@ def main():
     # Cria a malha
     faces = reader.get_faces()
     vertices = reader.get_vertices()
-    malha = MalhaT(vertices=vertices)
-    n = len(vertices)
-    # Calcula o centro da malha
-    centro_x = sum(v.x for v in vertices) / n
-    centro_y = sum(v.y for v in vertices) / n
-    centro_z = sum(v.z for v in vertices) / n
-    centro = Ponto(centro_x, centro_y, centro_z)
+    malha = MalhaT(faces=faces, vertices=vertices)
 
     # Configura a câmera
     camera = Camera(
         C=Ponto(-10, 0, 0),      # Posição da camera 
-        M=centro,      # Mira (olhando para origem)
+        M=malha.centro,      # Mira (olhando para origem)
         Vup=Vetor(0, 1, 0),
-        d=10,                     # Campo de visao 
+        d=6,                     # Campo de visao 
         Vres=200,
         Hres=200
     )
-
-    # Cada face da malha cria um triangulo
-    for face in faces:
-        idx1, idx2, idx3 = face.vertice_indices
-        v1 = vertices[idx1]
-        v2 = vertices[idx2]
-        v3 = vertices[idx3]
-        cor = face.kd.mult_escalar(255)  # Multiplica por 255 para converter de [0, 1] para [0, 255] 
-        triangulo = Triangulo(v1, v2, v3, cor)
-        malha.triangulos.append(triangulo)
-        malha.normaisTriangulos.append(triangulo.normal)
-        malha.numTriangulos += 1
-
-    malha.calcular_normais_vertices()
 
     objetos = [malha] 
     renderizar_cena(camera, objetos, "output_original.ppm")
 
     #Transformacao afim
-    transf = TransformacaoAfim()
-    vetorTeste = Vetor(1, 0, 0)
-    novoPlanoTeste = Plano(plano.ponto, transf.rotacaoX(90, plano.vetorNormal), plano.cor)
-    # novaEsferaTeste = Esfera(transf.translacao(2, 2, 0, esfera.centro), esfera.raio, esfera.cor)
-    print(f"Vetor original: {plano.vetorNormal}, Novo vetor: {novoPlanoTeste.vetorNormal}")
+    transformador = TransformacaoAfim()
+    malhaTransformada = transformador.rotacaoX(90, malha)
 
-    objetos = [esfera]
+    objetos = [malhaTransformada]
     renderizar_cena(camera, objetos, "output_transformado.ppm")
 
 if __name__ == "__main__":
