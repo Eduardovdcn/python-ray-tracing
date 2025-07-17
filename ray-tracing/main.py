@@ -4,13 +4,14 @@ from camera import Camera
 from objects import Esfera, Plano, Triangulo, MalhaT
 from obj_reader import ObjReader
 from affine_transformation import TransformacaoAfim
+from illumination import phong, Luz
 import numpy as np
 
 def cor_para_ppm(cor):
     # Garante que os valores estejam entre 0 e 255 e converte para int
     return f"{int(max(0, min(255, cor.x)))} {int(max(0, min(255, cor.y)))} {int(max(0, min(255, cor.z)))}"
 
-def renderizar_cena(camera, objetos, filename):
+def renderizar_cena(camera, objetos, luzes, filename):
     # Cria imagem
     imagem = np.zeros((camera.Vres, camera.Hres, 3), dtype=np.uint8)
     for i in range(camera.Vres):
@@ -25,8 +26,9 @@ def renderizar_cena(camera, objetos, filename):
                     if t is not None:
                         if t < menor_t:
                             menor_t = t
-                            cor_pixel = resultado[4]
-                            cor_pixel = cor_pixel
+                            cor_pixel = phong(luzes, resultado[4], ray, resultado[2], resultado[3]) # material = resultado[4], normal = resultado[2], pontoIntersecao = resultado[3]
+                            if cor_pixel.x < 10 or cor_pixel.y < 10 or cor_pixel.z < 10:
+                                print(f"Cor do pixel ({i}, {j}): {cor_pixel.x}, {cor_pixel.y}, {cor_pixel.z}")
 
             imagem[i, j] = [cor_pixel.x, cor_pixel.y, cor_pixel.z]
 
@@ -42,10 +44,28 @@ def renderizar_cena(camera, objetos, filename):
 
 def main():
     reader = ObjReader("C:/Users/eduar/OneDrive/Documentos/GitHub/python-ray-tracing/inputs/icosahedron.obj")
+    luzes = [Luz(posicao=Ponto(-5, 5, 5), intensidade=Vetor(255, 255, 255)),
+             #Luz(posicao=Ponto(5, -5, -5), intensidade=Vetor(255, 255, 255))
+             ]
 
     # Cria objetos
-    esfera = Esfera(raio=2, centro=Ponto(3, 0, 0), cor=Vetor(255, 0, 0))
-    plano = Plano(ponto=Ponto(0, -1, 0), vetorNormal=Vetor(0, 1, 0), cor=Vetor(200, 200, 200))
+    esfera = Esfera(raio=1, 
+                    centro=Ponto(5, 5, 0), 
+                    cor=Vetor(255, 0, 0), 
+                    n=20, 
+                    kd=Vetor(0.85, 0.85, 0.85), 
+                    ks=Vetor(0.5, 0.5, 0.5), 
+                    ka=Vetor(0.4, 0.3, 0.3)
+                    )
+    
+    plano = Plano(ponto=Ponto(0, -1.5, 5), 
+                  vetorNormal=Vetor(0, 1, 0), 
+                  cor=Vetor(0, 0, 200), 
+                  n=2, 
+                  kd=Vetor(1, 1, 1), 
+                  ks=Vetor(0.5, 0.5, 0.5), 
+                  ka=Vetor(0.6, 0.6, 0.6)
+                  )
 
     # Cria a malha
     faces = reader.get_faces()
@@ -57,20 +77,20 @@ def main():
         C=Ponto(-10, 0, 0),      # Posição da camera 
         M=malha.centro,      # Mira (olhando para origem)
         Vup=Vetor(0, 1, 0),
-        d=6,                     # Campo de visao 
+        d=2,                     # Campo de visao 
         Vres=200,
         Hres=200
     )
 
-    objetos = [malha] 
-    renderizar_cena(camera, objetos, "output_original.ppm")
+    objetos = [malha, esfera, plano] 
+    renderizar_cena(camera, objetos, luzes, "output_original.ppm")
 
     #Transformacao afim
-    transformador = TransformacaoAfim()
-    malhaTransformada = transformador.rotacaoX(90, malha)
+    #transformador = TransformacaoAfim()
+    #malhaTransformada = transformador.rotacaoX(90, malha)
 
-    objetos = [malhaTransformada]
-    renderizar_cena(camera, objetos, "output_transformado.ppm")
+    #objetos = [malhaTransformada]
+    #renderizar_cena(camera, objetos, luzes, "output_transformado.ppm")
 
 if __name__ == "__main__":
     main()

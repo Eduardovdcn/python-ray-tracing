@@ -1,8 +1,17 @@
+class Material:
+    def __init__(self, cor, n, kd, ks, ka):
+        self.cor = cor  # Cor do material
+        self.coeficienteRugosidade = n  # Coeficiente de rugosidade
+        self.kd = kd  # Coeficiente de difusão
+        self.ks = ks  # Coeficiente especular
+        self.ka = ka  # Coeficiente de ambiente
+
 class Esfera:
-    def __init__(self, raio, centro, cor):
+    def __init__(self, raio, centro, cor, n, kd, ks, ka):
         self.raio = raio
         self.centro = centro
         self.cor = cor
+        self.material = Material(cor, n, kd, ks, ka)
 
     def intersect(self, posCamera, vetorDiretor):
         condicao = True
@@ -13,72 +22,75 @@ class Esfera:
         delta = b ** 2 - 4 * a * c
         if delta < 0:
             condicao = False
-            return (condicao, None, None, None, self.cor)
+            return (condicao, None, None, None, self.material)
         t1 = (-b - delta ** 0.5) / (2 * a)
         t2 = (-b + delta ** 0.5) / (2 * a)
         
         if t1 >= 0 and t2 >= 0:
             pontoInterseccao = posCamera.__soma__(vetorDiretor.mult_escalar(min(t1, t2)))
-            return (condicao, min(t1, t2), None, pontoInterseccao, self.cor)
+            normal = (pontoInterseccao - self.centro).normalizar()
+            return (condicao, min(t1, t2), normal, pontoInterseccao, self.material)
         elif t1 >= 0:
             pontoInterseccao = posCamera.__soma__(vetorDiretor.mult_escalar(t1))
-            return (condicao, t1, None, pontoInterseccao, self.cor)
+            normal = (pontoInterseccao - self.centro).normalizar()
+            return (condicao, t1, normal, pontoInterseccao, self.material)
         elif t2 >= 0:
             pontoInterseccao = posCamera.__soma__(vetorDiretor.mult_escalar(t2))
-            return (condicao, t2, None, pontoInterseccao, self.cor)
-        
-        return (condicao, None, None, None, self.cor)
+            normal = (pontoInterseccao - self.centro).normalizar()
+            return (condicao, t2, normal, pontoInterseccao, self.material)
+
+        return (condicao, None, None, None, self.material)
 
 class Plano:
-    def __init__(self, ponto, vetorNormal, cor):
+    def __init__(self, ponto, vetorNormal, cor, n, kd, ks, ka):
         self.ponto = ponto
-        self.vetorNormal = vetorNormal
-        self.cor = cor
+        self.vetorNormal = vetorNormal.normalizar()
+        self.material = Material(cor, n, kd, ks, ka)
 
     def intersect(self, posCamera, vetorDiretor):
         condicao = True
         temp = vetorDiretor.produto_escalar(self.vetorNormal)
         if temp == 0:
             condicao = False
-            return (condicao, None, None, None, self.cor)
+            return (condicao, None, None, None, self.material)
         origemToCentro = self.ponto - posCamera
         t = origemToCentro.produto_escalar(self.vetorNormal) / temp
         if t < 0:
             condicao = False
-            return (condicao, None, None, None, self.cor)
+            return (condicao, None, None, None, self.material)
 
         pontoInterseccao = posCamera.__soma__(vetorDiretor.mult_escalar(t))
-        return (condicao, t, self.vetorNormal, pontoInterseccao, self.cor)
+        return (condicao, t, self.vetorNormal, pontoInterseccao, self.material)
 
 class Triangulo:
-    def __init__(self, v1, v2, v3, cor):
+    def __init__(self, v1, v2, v3, cor, kd, ks, ka, n):
         self.v1 = v1
         self.v2 = v2
         self.v3 = v3
         self.normal = (v2.__sub__(v1)).produto_vetorial(v3.__sub__(v1)).normalizar()
-        self.cor = cor
+        self.material = Material(cor, n, kd, ks, ka)
 
     def intersect(self, posCamera, vetorDiretor):
         # Cria o plano do triangulo e verifica se o raio intersecta
         condicao = True
-        planoTriangulo = Plano(self.v1, self.normal, self.cor)
+        planoTriangulo = Plano(self.v1, self.normal, self.material.cor, self.material.coeficienteRugosidade, self.material.kd, self.material.ks, self.material.ka)
         resultado_plano = planoTriangulo.intersect(posCamera, vetorDiretor)
         # Verifica se intersecta e se o t eh valido
         if resultado_plano is None or resultado_plano[0] == False:
             condicao = False
-            return (condicao, None, None, None, self.cor)       
+            return (condicao, None, None, None, self.material)
             
         t = resultado_plano[1]
 
         if t <= 1e-10:
             condicao = False
-            return (condicao, None, None, None, self.cor)
+            return (condicao, None, None, None, self.material)
 
         # Calcula o ponto de interseccao e verifica se esta dentro do triangulo
         pontoInterseccao = posCamera.__soma__(vetorDiretor.mult_escalar(t))
-        return self.ponto_interno(t, pontoInterseccao, self.cor)
+        return self.ponto_interno(t, pontoInterseccao, self.material)
 
-    def ponto_interno(self, t, ponto, cor):
+    def ponto_interno(self, t, ponto, material):
         vetorV1V2 = self.v2 - self.v1
         vetorV1V3 = self.v3 - self.v1
         vetorPV1 = ponto - self.v1  
@@ -92,16 +104,16 @@ class Triangulo:
         denom = d00 * d11 - d01 * d01
         if abs(denom) <= 1e-10:
             condicao = False
-            return (condicao, None, None, None, self.cor)
+            return (condicao, None, None, None, self.material)
         # Coordenadas baricentricas
         alfa = (d11 * d20 - d01 * d21) / denom
         beta = (d00 * d21 - d01 * d20) / denom
         gama = 1.0 - alfa - beta
         # Verifica se o ponto esta dentro do triangulo
         if alfa >= 1e-10 and beta >= 1e-10 and gama >= 1e-10:
-            return (True, t, self.normal, ponto, cor)
+            return (True, t, self.normal, ponto, self.material)
         else:
-            return (False, None, None, None, self.cor)
+            return (False, None, None, None, self.material)
 
 class MalhaT:
     def __init__(self, faces, vertices):
@@ -124,7 +136,7 @@ class MalhaT:
             v2 = self.vertices[idx2]
             v3 = self.vertices[idx3]
             cor = face.kd.mult_escalar(255)  # Multiplica por 255 para converter de [0, 1] para [0, 255] 
-            triangulo = Triangulo(v1, v2, v3, cor)
+            triangulo = Triangulo(v1, v2, v3, cor, face.kd, face.ks, face.ka, n=2)
             self.triangulos.append(triangulo)
             self.normaisTriangulos.append(triangulo.normal)
             self.numTriangulos += 1
@@ -151,11 +163,11 @@ class MalhaT:
             resultado = triangulo.intersect(posCamera, vetorDiretor)
             # Se existe intersecao
             if resultado is not None and resultado[0] == True:
-                _, t, normal, ponto, cor = resultado
+                _, t, normal, ponto, material = resultado
                 # Se o t eh valido e menor que o atual, vira o menor
                 if t is not None and t < menor_t and t > 1e-10:
                     menor_t = t
-                    menor_resultado = (True, t, normal, ponto, cor)
+                    menor_resultado = (True, t, normal, ponto, material)
 
         if menor_resultado is None:
             from vector import Vetor

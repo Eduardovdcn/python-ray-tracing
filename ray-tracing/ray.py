@@ -1,6 +1,8 @@
 from point import Ponto
 from vector import Vetor
 
+
+
 class Ray:
     """Um raio de luz. Possui um ponto de origem e um vetor que indica sua direção."""
 
