@@ -5,11 +5,26 @@ from objects import Esfera, Plano, Triangulo, MalhaT
 from obj_reader import ObjReader
 from affine_transformation import TransformacaoAfim
 from illumination import phong, Luz
+from ray import Ray
 import numpy as np
 
 def cor_para_ppm(cor):
     # Garante que os valores estejam entre 0 e 255 e converte para int
     return f"{int(max(0, min(255, cor.x)))} {int(max(0, min(255, cor.y)))} {int(max(0, min(255, cor.z)))}"
+
+# Função para calcular a reflexão
+def reflect(ray, normal):
+    return normal.mult_escalar(2 * normal.produto_escalar(ray)).__sub__(ray)
+
+# Função para calcular a refração (Lei de Snell)
+def refract(ray, normal, ref_idx):
+    cos_i = -normal.prod_escalar(ray.direcao)
+    sin_t2 = ref_idx**2 * (1.0 - cos_i**2)
+    if sin_t2 > 1.0:
+        return None  # Total internal reflection
+    cos_t = np.sqrt(1.0 - sin_t2)
+    refracted = ray.direcao * ref_idx + normal * (ref_idx * cos_i - cos_t)
+    return refracted
 
 def renderizar_cena(camera, objetos, luzes, filename):
     # Cria imagem
@@ -19,7 +34,7 @@ def renderizar_cena(camera, objetos, luzes, filename):
             ray = camera.get_ray(j, i)
             cor_pixel = Vetor(0, 0, 0)  # Cor de fundo padrão
             menor_t = float('inf')
-            recursion_index = 0
+            depth = 0
             for obj in objetos:
                 resultado = obj.intersect(ray.origem, ray.direcao)
                 if resultado is not None and resultado[0] == True:
@@ -27,7 +42,12 @@ def renderizar_cena(camera, objetos, luzes, filename):
                     if t is not None:
                         if t < menor_t:
                             menor_t = t
-                            cor_pixel = phong(luzes, resultado[4], ray, resultado[2], resultado[3], objetos, recursion_index) # material = resultado[4], normal = resultado[2], pontoIntersecao = resultado[3]
+                            cor_pixel = phong(luzes, resultado[4], ray, resultado[2], resultado[3]) # material = resultado[4], normal = resultado[2], pontoIntersecao = resultado[3]
+                            depth = depth + 1
+                            if resultado[4].ns > 0 & depth < 3:
+                                     reflection_ray = Ray(resultado[3], reflect(ray, resultado[2]))
+                                     reflection_color = phong(luzes, resultado[4], reflection_ray, resultado[2], resultado[3])
+                                     cor_pixel = cor_pixel * reflection_color
                             if cor_pixel.x < 10 or cor_pixel.y < 10 or cor_pixel.z < 10:
                                 print(f"Cor do pixel ({i}, {j}): {cor_pixel.x}, {cor_pixel.y}, {cor_pixel.z}")
 
@@ -72,7 +92,7 @@ def main():
                   ni= 0.3
                   )
 
-    plano2 = Plano(ponto=Ponto(0, 6, 5),
+    plano2 = Plano(ponto=Ponto(0, 5, 5),
                    vetorNormal=Vetor(0,1,0),
                    cor=Vetor(0,0,200),
                    n=2,

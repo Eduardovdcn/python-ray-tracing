@@ -9,7 +9,7 @@ class Luz:
         self.intensidade = intensidade 
 
 
-def phong(luzes, material, raio, normal, pontoIntersecao, objetos, recursion_index):
+def phong(luzes, material, raio, normal, pontoIntersecao):
     IA = (30, 30, 30)  # Intensidade da luz ambiente
     KS = material.ks
     KD = material.kd
@@ -34,7 +34,8 @@ def phong(luzes, material, raio, normal, pontoIntersecao, objetos, recursion_ind
         IL = luz.intensidade
         cossenoNL = max(N.produto_escalar(L), 0.0)
         reflexivaLuz = Vetor(0, 0, 0) ##tem que inicializar fora do if, infelizmente...
-
+        #depth = depth + 1
+        
         difusaoLuz = Vetor(KD.x * IL.x * cossenoNL * OD.x,
                         KD.y * IL.y * cossenoNL * OD.y,
                         KD.z * IL.z * cossenoNL * OD.z)
@@ -63,7 +64,10 @@ def phong(luzes, material, raio, normal, pontoIntersecao, objetos, recursion_ind
         #                      menor_t = t
         #                      reflexivaLuz = phong(luzes, resultado[4], raioNovo, resultado[2], resultado[3], objetos, recursion_index) # material = resultado[4], normal = resultado[2], pontoIntersecao = resultado[3]
         #                      recursion_index = recursion_index + 1  ##incrementa o índice de recursão
-        
+        #
+        #
+        #
+        #
         refrativaLuz = Vetor(0,0,0)
         difusao = difusao.soma(difusaoLuz)
         especular = especular.soma(especularLuz)
@@ -72,11 +76,11 @@ def phong(luzes, material, raio, normal, pontoIntersecao, objetos, recursion_ind
         ##refrativa = refrativa.soma(refrativaLuz)
         
     
-    iluminacao = ambiente.soma(difusao).soma(especular) ##.soma(reflexiva) ##.soma(refrativa)
+    iluminacao = ambiente.soma(difusao).soma(especular).soma(reflexiva) ##.soma(refrativa)
     iluminacao.x = min(iluminacao.x, 255)
     iluminacao.y = min(iluminacao.y, 255)
     iluminacao.z = min(iluminacao.z, 255)
-    if iluminacao.x < 10 or iluminacao.y < 10 or iluminacao.z < 10 and recursion_index < 1: ##não vamos printar todas as recursões...
+    if iluminacao.x < 10 or iluminacao.y < 10 or iluminacao.z < 10 : ##and recursion_index < 1: ##não vamos printar todas as recursões...
         print(f"Iluminação calculada: {iluminacao.x}, {iluminacao.y}, {iluminacao.z}")
     return iluminacao
 
