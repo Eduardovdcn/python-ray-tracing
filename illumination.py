@@ -9,7 +9,7 @@ class Luz:
         self.intensidade = intensidade 
 
 
-def phong(luzes, material, raio, normal, pontoIntersecao):
+def phong(luzes, material, raio, normal, pontoIntersecao, objetos, depth):
     IA = (30, 30, 30)  # Intensidade da luz ambiente
     KS = material.ks
     KD = material.kd
@@ -34,7 +34,7 @@ def phong(luzes, material, raio, normal, pontoIntersecao):
         IL = luz.intensidade
         cossenoNL = max(N.produto_escalar(L), 0.0)
         reflexivaLuz = Vetor(0, 0, 0) ##tem que inicializar fora do if, infelizmente...
-        #depth = depth + 1
+        depth = depth + 1
         
         difusaoLuz = Vetor(KD.x * IL.x * cossenoNL * OD.x,
                         KD.y * IL.y * cossenoNL * OD.y,
@@ -49,25 +49,34 @@ def phong(luzes, material, raio, normal, pontoIntersecao):
                         KS.y * IL.y * (cossenoRV ** COEF),
                         KS.z * IL.z * (cossenoRV ** COEF))
 
-        #if(material.ns > 0 & recursion_index < 1): ##economizar processamento em não-refletivos ou na terceira recursao
-        #  LReflexo = N.mult_escalar(2 * N.produto_escalar(L)).__sub__(L)
-        #  if LReflexo.norma() != 0:
-        #      pontoInt = Ponto(pontoIntersecao.x, pontoIntersecao.y, pontoIntersecao.z)
-        #      raioNovo = Ray(pontoInt, LReflexo) ##ponto interseção tá saindo como vetor???
-        #      menor_t = float('inf')
-        #      for obj in objetos:
-        #          resultado = obj.intersect(raioNovo.origem, raioNovo.direcao)
-        #          if resultado is not None and resultado[0] == True:
-        #              t = resultado[1]
-        #              if t is not None:
-        #                  if t < menor_t:
-        #                      menor_t = t
-        #                      reflexivaLuz = phong(luzes, resultado[4], raioNovo, resultado[2], resultado[3], objetos, recursion_index) # material = resultado[4], normal = resultado[2], pontoIntersecao = resultado[3]
-        #                      recursion_index = recursion_index + 1  ##incrementa o índice de recursão
-        #
-        #
-        #
-        #
+        if(material.ns > 0 & depth < 1): ##economizar processamento em não-refletivos ou na terceira recursao
+          LReflexo = N.mult_escalar(2 * N.produto_escalar(L)).__sub__(L)
+          if LReflexo.norma() != 0:
+              pontoInt = Ponto(pontoIntersecao.x, pontoIntersecao.y, pontoIntersecao.z)
+              raioNovo = Ray(pontoInt, LReflexo) ##ponto interseção tá saindo como vetor???
+              menor_t = float('inf')
+              for obj in objetos:
+                  resultado = obj.intersect(raioNovo.origem, raioNovo.direcao)
+                  if resultado is not None and resultado[0] == True:
+                      t = resultado[1]
+                      if t is not None:
+                          if t < menor_t:
+                              menor_t = t
+                              reflexivaLuz = phong(luzes, resultado[4], raioNovo, resultado[2], resultado[3], objetos, depth) # material = resultado[4], normal = resultado[2], pontoIntersecao = resultado[3]
+                              recursion_index = recursion_index + 1  ##incrementa o índice de recursão
+        
+        ##    def refract(ray, normal, ref_idx):
+        ## cos_i = -normal.prod_escalar(ray.direcao)
+        ## sin_t2 = ref_idx**2 * (1.0 - cos_i**2)
+        ## if sin_t2 > 1.0:
+        ## return None  # Total internal reflection
+        ## cos_t = np.sqrt(1.0 - sin_t2)
+        ## refracted = ray.direcao * ref_idx + normal * (ref_idx * cos_i - cos_t)
+        
+
+        
+        
+        
         refrativaLuz = Vetor(0,0,0)
         difusao = difusao.soma(difusaoLuz)
         especular = especular.soma(especularLuz)
@@ -80,7 +89,7 @@ def phong(luzes, material, raio, normal, pontoIntersecao):
     iluminacao.x = min(iluminacao.x, 255)
     iluminacao.y = min(iluminacao.y, 255)
     iluminacao.z = min(iluminacao.z, 255)
-    if iluminacao.x < 10 or iluminacao.y < 10 or iluminacao.z < 10 : ##and recursion_index < 1: ##não vamos printar todas as recursões...
+    if iluminacao.x < 10 or iluminacao.y < 10 or iluminacao.z < 10  and recursion_index < 1: ##não vamos printar todas as recursões...
         print(f"Iluminação calculada: {iluminacao.x}, {iluminacao.y}, {iluminacao.z}")
     return iluminacao
 
