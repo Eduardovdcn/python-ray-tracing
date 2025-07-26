@@ -63,7 +63,6 @@ def phong(luzes, material, raio, normal, pontoIntersecao, objetos, depth):
                           if t < menor_t:
                               menor_t = t
                               reflexivaLuz = phong(luzes, resultado[4], raioNovo, resultado[2], resultado[3], objetos, depth) # material = resultado[4], normal = resultado[2], pontoIntersecao = resultado[3]
-                              recursion_index = recursion_index + 1  ##incrementa o índice de recursão
         
         ##    def refract(ray, normal, ref_idx):
         ## cos_i = -normal.prod_escalar(ray.direcao)
@@ -89,7 +88,7 @@ def phong(luzes, material, raio, normal, pontoIntersecao, objetos, depth):
     iluminacao.x = min(iluminacao.x, 255)
     iluminacao.y = min(iluminacao.y, 255)
     iluminacao.z = min(iluminacao.z, 255)
-    if iluminacao.x < 10 or iluminacao.y < 10 or iluminacao.z < 10  and recursion_index < 1: ##não vamos printar todas as recursões...
+    if iluminacao.x < 10 or iluminacao.y < 10 or iluminacao.z < 10  and depth < 1: ##não vamos printar todas as recursões...
         print(f"Iluminação calculada: {iluminacao.x}, {iluminacao.y}, {iluminacao.z}")
     return iluminacao
 
