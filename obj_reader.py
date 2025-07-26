@@ -52,7 +52,6 @@ class ObjReader:
         base_dir = os.path.dirname(file_path)
         with open(file_path, 'r') as file:
             for line in file:
-
                 if line.startswith('mtllib '):
                     file_name = line.split()[1]
                     mtl_path = os.path.join(base_dir, file_name)
@@ -71,7 +70,6 @@ class ObjReader:
                 elif line.startswith('f '):
                     face = Face()
                     face.vertice_indices = list(map(lambda x: int(x.split('/')[0]) - 1, line[2:].split()))
-                    face.normal_indices = list(map(lambda x: int(x.split('/')[2]) - 1, line[2:].split()))
                     face.ka = self.cur_material.ka
                     face.kd = self.cur_material.kd
                     face.ks = self.cur_material.ks
@@ -174,4 +172,3 @@ class ObjReader:
             print(f"Ns: {face.ns}")
             print(f"Ni: {face.ni}")
             print(f"d: {face.d}")
-            print()
