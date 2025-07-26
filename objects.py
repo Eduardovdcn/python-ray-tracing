@@ -6,7 +6,7 @@ class Material:
         self.ks = ks  # Coeficiente especular
         self.ka = ka  # Coeficiente de ambiente
         self.ns = ns  # Coeficiente de reflexão
-        self.ni = ni  # Coeficiente de refração
+        self.ni = ni  # Indice de refração
 
 class Esfera:
     def __init__(self, raio, centro, cor, n, kd, ks, ka, ns, ni):

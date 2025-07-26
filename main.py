@@ -67,10 +67,21 @@ def main():
                   n=2, 
                   kd=Vetor(1, 1, 1), 
                   ks=Vetor(0.5, 0.5, 0.5), 
-                  ka=Vetor(0.6, 0.6, 0.6),
+                  ka=Vetor(1, 1, 1),
                   ns= 0,
                   ni= 0.3
                   )
+
+    plano2 = Plano(ponto=Ponto(0, 6, 5),
+                   vetorNormal=Vetor(0,1,0),
+                   cor=Vetor(0,0,200),
+                   n=2,
+                   kd=Vetor(1,1,1),
+                   ks=Vetor(0.5,0.5,0.5),
+                   ka=Vetor(1,1,1),
+                   ns=0,
+                   ni= 0.3
+                   )
 
     # Cria a malha
     faces = reader.get_faces()
@@ -87,7 +98,7 @@ def main():
         Hres=300
     )
 
-    objetos = [malha, esfera, plano] 
+    objetos = [malha, esfera, plano, plano2] 
     renderizar_cena(camera, objetos, luzes, "output_original.ppm")
 
     #Transformacao afim
