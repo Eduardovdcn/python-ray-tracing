@@ -32,10 +32,9 @@ def getEspecular(V, R, luz, KS, COEF):
 
 
 def getReflexao(N, R, KR, pontoIntersecao, objetos, luzes, profundidade):
-    MAX_PROFUNDIDADE = 5
+    MAX_PROFUNDIDADE = 3
     epsilon = 1e-6
-    
-    # Early exit se não há componente reflexiva ou excedeu profundidade
+    #se não há componente reflexiva ou excedeu profundidade
     if profundidade >= MAX_PROFUNDIDADE:
         return Vetor(0, 0, 0)
     
@@ -43,7 +42,6 @@ def getReflexao(N, R, KR, pontoIntersecao, objetos, luzes, profundidade):
     if R.norma() == 0:
         return Vetor(0, 0, 0)
         
-    # Gera novo raio refletido
     novoPontoIntersecao = Ponto(
         pontoIntersecao.x + N.x * epsilon,
         pontoIntersecao.y + N.y * epsilon,
@@ -52,57 +50,55 @@ def getReflexao(N, R, KR, pontoIntersecao, objetos, luzes, profundidade):
     direcaoReflexao = R.normalizar()
     
     # Interseção recursiva
-    resultado = intersect(novoPontoIntersecao, direcaoReflexao, objetos, profundidade + 1)
+    resultado = intersect(novoPontoIntersecao, direcaoReflexao, objetos)
     if resultado is not None and resultado[0]:
         _, tRefletido, normalRefletido, pontoRefletido, materialRefletido = resultado
         raioReflexao = Ray(novoPontoIntersecao, direcaoReflexao)
         # Calcula iluminação recursiva no ponto de intersecção
-        cor_reflexao = phong(
+        corReflexao = phong(
             luzes, materialRefletido, raioReflexao, normalRefletido, pontoRefletido, objetos, profundidade + 1
         )
-        # Escala pela componente KR do material original
+        
         return Vetor(
-            KR.x * cor_reflexao.x,
-            KR.y * cor_reflexao.y,
-            KR.z * cor_reflexao.z
+            KR.x * corReflexao.x,
+            KR.y * corReflexao.y,
+            KR.z * corReflexao.z
         )
     return Vetor(0, 0, 0)
 
 
 def getRefracao(raio, normal, KT, pontoIntersecao, objetos, luzes, profundidade):
-    MAX_PROFUNDIDADE = 5
+    MAX_PROFUNDIDADE = 3
     epsilon = 1e-6
     
-    # Early exit se não há componente refrativa ou excedeu profundidade
-    if profundidade >= MAX_PROFUNDIDADE:
+    # Se não há componente refrativa ou excedeu profundidade
+    if profundidade >= MAX_PROFUNDIDADE or KT <= 0:
         return Vetor(0, 0, 0)
     
     # Índices de refração (ar = 1.0, vidro ≈ 1.5)
-    n1 = 1.0  # meio de origem (ar)
-    n2 = 1.5  # meio de destino (material)
-    ref_idx = n1 / n2
-    
+    N1 = 1.0  # meio de origem (ar)
+    N2 = 1.5  # meio de destino (material)
+    indiceRefracao = N1 / N2
+
     N = normal.normalizar()
     I = raio.direcao.normalizar()
-    
-    # Calcular ângulo de incidência
-    cos_i = -N.produto_escalar(I)
-    
-    # Lei de Snell: sin²(t) = (n1/n2)² * (1 - cos²(i))
-    ref_idx_sq = ref_idx * ref_idx
-    sin_t2 = ref_idx_sq * (1.0 - cos_i * cos_i)
-    
+    cosNI = -N.produto_escalar(I)   # Ângulo de incidência
+
+    # Lei de Snell: sin²(θt) = (n1/n2)² * sin²(θi)
+    # sin²(θi) = 1 - cos²(θi)
+    sinT2 = (indiceRefracao ** 2) * (1.0 - (cosNI ** 2))
+
     # Verificar reflexão interna total
-    if sin_t2 > 1.0:
-        return Vetor(0, 0, 0)  # Reflexão interna total
-    
-    cos_t = math.sqrt(1.0 - sin_t2)
-    
-    # Calcular direção refratada: T = (n1/n2) * I + ((n1/n2) * cos_i - cos_t) * N
-    fator = ref_idx * cos_i - cos_t
-    direcaoRefracao = I.mult_escalar(ref_idx).soma(N.mult_escalar(fator))
-    
-    # Verificar se a direção é válida
+    if sinT2 > 1.0:
+        return Vetor(0, 0, 0)
+
+    cosT = math.sqrt(1.0 - sinT2)
+
+    # Calcular direção refratada
+    # T = η*I + (η*cos_i - cos_t)*N
+    fator = (indiceRefracao * cosNI) - cosT
+    direcaoRefracao = I.mult_escalar(indiceRefracao).soma(N.mult_escalar(fator))
+
     if direcaoRefracao.norma() == 0:
         return Vetor(0, 0, 0)
     
@@ -115,24 +111,24 @@ def getRefracao(raio, normal, KT, pontoIntersecao, objetos, luzes, profundidade)
     direcaoRefracao = direcaoRefracao.normalizar()
     
     # Interseção recursiva
-    resultado = intersect(novoPontoIntersecao, direcaoRefracao, objetos, profundidade + 1)
+    resultado = intersect(novoPontoIntersecao, direcaoRefracao, objetos)
     if resultado is not None and resultado[0]:
         _, tRefratado, normalRefratado, pontoRefratado, materialRefratado = resultado
         raioRefracao = Ray(novoPontoIntersecao, direcaoRefracao)
-        # Calcula iluminação recursiva no ponto de intersecção
-        cor_refracao = phong(
+
+        corRefracao = phong(
             luzes, materialRefratado, raioRefracao, normalRefratado, pontoRefratado, objetos, profundidade + 1
         )
         # Escala pela componente KT do material original
         return Vetor(
-            KT * cor_refracao.x,
-            KT * cor_refracao.y,
-            KT * cor_refracao.z
+            KT * corRefracao.x,
+            KT * corRefracao.y,
+            KT * corRefracao.z
         )
     return Vetor(0, 0, 0)
 
 
-def intersect(origem, direcao, objetos, profundidade=0):
+def intersect(origem, direcao, objetos):
     epsilon = 1e-6
     menor_t = float('inf')
     resultado_mais_proximo = None
@@ -141,7 +137,6 @@ def intersect(origem, direcao, objetos, profundidade=0):
         resultado = obj.intersect(origem, direcao)
         if resultado is not None and resultado[0]:
             t = resultado[1]
-            # Otimização: verificar condições em ordem de probabilidade
             if t is not None and t > epsilon:
                 if t < menor_t:
                     menor_t = t
@@ -151,7 +146,7 @@ def intersect(origem, direcao, objetos, profundidade=0):
 
 def phong(luzes, material, raio, normal, pontoIntersecao, objetos, profundidade):
     # Limite de profundidade para evitar recursão infinita
-    MAX_PROFUNDIDADE = 2
+    MAX_PROFUNDIDADE = 3
     if profundidade > MAX_PROFUNDIDADE:
         return Vetor(0, 0, 0)
     
@@ -162,10 +157,8 @@ def phong(luzes, material, raio, normal, pontoIntersecao, objetos, profundidade)
     KA = material.ka
     COEF = material.coeficienteRugosidade
     KR = material.kr
-    KT = material.kt  # Componente de transmissão/refração
+    KT = material.kt  
     OD = material.cor.normalizar()
-    
-    # Pre-calcular vetores que não mudam no loop
     N = normal.normalizar()
     V = (raio.origem.__sub__(pontoIntersecao)).normalizar()
     
@@ -179,23 +172,19 @@ def phong(luzes, material, raio, normal, pontoIntersecao, objetos, profundidade)
     # Iluminação direta
     for luz in luzes:
         L = (luz.posicao.__sub__(pontoIntersecao)).normalizar()
-        # Cache do produto escalar para evitar recálculo
-        dot_NL = N.produto_escalar(L)
-        R = N.mult_escalar(2 * dot_NL).__sub__(L)
+        R = N.mult_escalar(2 * N.produto_escalar(L)).__sub__(L)
         
         difusao = difusao.soma(getDifusao(N, L, luz, KD, OD))
         especular = especular.soma(getEspecular(V, R, luz, KS, COEF))
     
-    # Componente reflexiva (early exit se não há reflexão)
+    # Componente reflexiva 
     reflexiva = Vetor(0, 0, 0)
     if KR.x > 0 or KR.y > 0 or KR.z > 0:
         I = raio.direcao.normalizar()
-        # Simplificado: R = I - 2(I·N)N
-        dot_IN = I.produto_escalar(N)
-        R_reflexao = I.__sub__(N.mult_escalar(2 * dot_IN))
+        R_reflexao = I.__sub__(N.mult_escalar(2 * I.produto_escalar(N))) #R = I - 2(I·N)N
         reflexiva = getReflexao(N, R_reflexao, KR, pontoIntersecao, objetos, luzes, profundidade)
     
-    # Componente refrativa (early exit se não há refração)
+    # Componente refrativa 
     refrativa = Vetor(0, 0, 0)
     # if KT > 0:
     #     refrativa = getRefracao(raio, N, KT, pontoIntersecao, objetos, luzes, profundidade)
@@ -203,7 +192,6 @@ def phong(luzes, material, raio, normal, pontoIntersecao, objetos, profundidade)
     # Combinação final
     iluminacao = ambiente.soma(difusao).soma(especular).soma(reflexiva).soma(refrativa)
     
-    # Clamp dos valores para evitar overflow
     iluminacao.x = min(max(iluminacao.x, 0), 255)
     iluminacao.y = min(max(iluminacao.y, 0), 255)
     iluminacao.z = min(max(iluminacao.z, 0), 255)

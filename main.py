@@ -51,24 +51,24 @@ def main():
 
     # Cria objetos
     esfera = Esfera(raio=2, 
-                    centro=Ponto(5, 5, 0), 
+                    centro=Ponto(5, 2, -4), 
                     cor=Vetor(150, 0, 150), 
                     n=20, 
                     kd=Vetor(0.85, 0.85, 0.85), 
                     ks=Vetor(0.5, 0.5, 0.5), 
                     ka=Vetor(0.4, 0.3, 0.3),
                     kr= Vetor(1,1,1),
-                    kt= 0.7
+                    kt= 1
                     )
     
     esfera2 = Esfera(raio=2, 
-                    centro=Ponto(7, 5, 6), 
+                    centro=Ponto(7, 2, 4), 
                     cor=Vetor(0, 150, 0), 
                     n=20, 
                     kd=Vetor(0.85, 0.85, 0.85), 
                     ks=Vetor(0.5, 0.5, 0.5), 
                     ka=Vetor(0.4, 0.3, 0.3),
-                    kr= Vetor(0.3,0.3,0.3),
+                    kr= Vetor(1,1,1),
                     kt= 0.7
                     )
     
@@ -79,7 +79,7 @@ def main():
                   kd=Vetor(1, 1, 1), 
                   ks=Vetor(0.5, 0.5, 0.5), 
                   ka=Vetor(1, 1, 1),
-                  kr= Vetor(0, 0, 0),
+                  kr= Vetor(1, 1, 1),
                   kt= 0.3
                   )
 
