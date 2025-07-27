@@ -1,19 +1,19 @@
 class Material:
-    def __init__(self, cor, n, kd, ks, ka, ns, ni):
+    def __init__(self, cor, n, kd, ks, ka, kr, kt):
         self.cor = cor  # Cor do material
         self.coeficienteRugosidade = n  # Coeficiente de rugosidade
         self.kd = kd  # Coeficiente de difusão
         self.ks = ks  # Coeficiente especular
         self.ka = ka  # Coeficiente de ambiente
-        self.ns = ns  # Coeficiente de reflexão
-        self.ni = ni  # Indice de refração
+        self.kr = kr  # Coeficiente de reflexão
+        self.kt = kt  # Indice de refração
 
 class Esfera:
-    def __init__(self, raio, centro, cor, n, kd, ks, ka, ns, ni):
+    def __init__(self, raio, centro, cor, n, kd, ks, ka, kr, kt):
         self.raio = raio
         self.centro = centro
         self.cor = cor
-        self.material = Material(cor, n, kd, ks, ka, ns, ni)
+        self.material = Material(cor, n, kd, ks, ka, kr, kt)
 
     def intersect(self, posCamera, vetorDiretor):
         condicao = True
@@ -44,10 +44,10 @@ class Esfera:
         return (condicao, None, None, None, self.material)
 
 class Plano:
-    def __init__(self, ponto, vetorNormal, cor, n, kd, ks, ka, ns, ni):
+    def __init__(self, ponto, vetorNormal, cor, n, kd, ks, ka, kr, kt):
         self.ponto = ponto
         self.vetorNormal = vetorNormal.normalizar()
-        self.material = Material(cor, n, kd, ks, ka, ns, ni)
+        self.material = Material(cor, n, kd, ks, ka, kr, kt)
 
     def intersect(self, posCamera, vetorDiretor):
         condicao = True
@@ -65,17 +65,17 @@ class Plano:
         return (condicao, t, self.vetorNormal, pontoInterseccao, self.material)
 
 class Triangulo:
-    def __init__(self, v1, v2, v3, cor, kd, ks, ka, ns, ni, n):
+    def __init__(self, v1, v2, v3, cor, kd, ks, ka, kr, kt, n):
         self.v1 = v1
         self.v2 = v2
         self.v3 = v3
         self.normal = (v2.__sub__(v1)).produto_vetorial(v3.__sub__(v1)).normalizar()
-        self.material = Material(cor, n, kd, ks, ka, ns, ni)
+        self.material = Material(cor, n, kd, ks, ka, kr, kt)
 
     def intersect(self, posCamera, vetorDiretor):
         # Cria o plano do triangulo e verifica se o raio intersecta
         condicao = True
-        planoTriangulo = Plano(self.v1, self.normal, self.material.cor, self.material.coeficienteRugosidade, self.material.kd, self.material.ks, self.material.ka, self.material.ns, self.material.ni)
+        planoTriangulo = Plano(self.v1, self.normal, self.material.cor, self.material.coeficienteRugosidade, self.material.kd, self.material.ks, self.material.ka, self.material.kr, self.material.kt)
         resultado_plano = planoTriangulo.intersect(posCamera, vetorDiretor)
         # Verifica se intersecta e se o t eh valido
         if resultado_plano is None or resultado_plano[0] == False:
@@ -138,7 +138,7 @@ class MalhaT:
             v2 = self.vertices[idx2]
             v3 = self.vertices[idx3]
             cor = face.kd.mult_escalar(255)  # Multiplica por 255 para converter de [0, 1] para [0, 255] 
-            triangulo = Triangulo(v1, v2, v3, cor, face.kd, face.ks, face.ka, face.ns, face.ni, n=2)
+            triangulo = Triangulo(v1, v2, v3, cor, face.kd, face.ks, face.ka, face.ke, face.ni, n=2)
             self.triangulos.append(triangulo)
             self.normaisTriangulos.append(triangulo.normal)
             self.numTriangulos += 1

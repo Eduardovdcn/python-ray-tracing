@@ -30,9 +30,7 @@ def renderizar_cena(camera, objetos, luzes, filename):
                         if t < menor_t:
                             menor_t = t
                             cor_pixel = phong(luzes, resultado[4], ray, resultado[2], resultado[3], objetos, depth) # material = resultado[4], normal = resultado[2], pontoIntersecao = resultado[3]
-                            if cor_pixel.x < 10 or cor_pixel.y < 10 or cor_pixel.z < 10:
-                                print(f"Cor do pixel ({i}, {j}): {cor_pixel.x}, {cor_pixel.y}, {cor_pixel.z}")
-
+                        
             imagem[i, j] = [cor_pixel.x, cor_pixel.y, cor_pixel.z]
 
     with open(filename, "w") as f:
@@ -46,9 +44,9 @@ def renderizar_cena(camera, objetos, luzes, filename):
     return imagem
 
 def main():
-    reader = ObjReader("C:/Users/phjc/Documents/python-ray-tracing-entrega_3/inputs/icosahedron.obj")
+    reader = ObjReader("C:/Users/eduar/OneDrive/Documentos/GitHub/teste/python-ray-tracing/inputs/icosahedron.obj")
     luzes = [Luz(posicao=Ponto(-5, 5, 5), intensidade=Vetor(255, 255, 255)),
-             Luz(posicao=Ponto(5, -5, -5), intensidade=Vetor(255, 255, 255))
+             #Luz(posicao=Ponto(5, -5, -5), intensidade=Vetor(255, 255, 255))
              ]
 
     # Cria objetos
@@ -59,8 +57,19 @@ def main():
                     kd=Vetor(0.85, 0.85, 0.85), 
                     ks=Vetor(0.5, 0.5, 0.5), 
                     ka=Vetor(0.4, 0.3, 0.3),
-                    ns= 0.3,
-                    ni= 0
+                    kr= Vetor(1,1,1),
+                    kt= 0.7
+                    )
+    
+    esfera2 = Esfera(raio=2, 
+                    centro=Ponto(7, 5, 6), 
+                    cor=Vetor(0, 150, 0), 
+                    n=20, 
+                    kd=Vetor(0.85, 0.85, 0.85), 
+                    ks=Vetor(0.5, 0.5, 0.5), 
+                    ka=Vetor(0.4, 0.3, 0.3),
+                    kr= Vetor(0.3,0.3,0.3),
+                    kt= 0.7
                     )
     
     plano = Plano(ponto=Ponto(0, -1.5, 5), 
@@ -70,8 +79,8 @@ def main():
                   kd=Vetor(1, 1, 1), 
                   ks=Vetor(0.5, 0.5, 0.5), 
                   ka=Vetor(1, 1, 1),
-                  ns= 0,
-                  ni= 0.3
+                  kr= Vetor(0, 0, 0),
+                  kt= 0.3
                   )
 
     plano2 = Plano(ponto=Ponto(0, 5, 5),
@@ -81,8 +90,8 @@ def main():
                    kd=Vetor(1,1,1),
                    ks=Vetor(0.5,0.5,0.5),
                    ka=Vetor(1,1,1),
-                   ns=0,
-                   ni= 0.3
+                   kr=Vetor(0.4, 0.4, 0.4),
+                   kt= 0.3
                    )
 
     # Cria a malha
@@ -100,7 +109,7 @@ def main():
         Hres=300
     )
 
-    objetos = [malha, esfera, plano, plano2] 
+    objetos = [malha, esfera, esfera2, plano] 
     renderizar_cena(camera, objetos, luzes, "output_original.ppm")
 
     #Transformacao afim
