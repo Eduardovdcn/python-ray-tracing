@@ -44,7 +44,7 @@ def renderizar_cena(camera, objetos, luzes, filename):
     return imagem
 
 def main():
-    reader = ObjReader("C:/Users/eduar/OneDrive/Documentos/GitHub/teste/python-ray-tracing/inputs/icosahedron.obj")
+    reader = ObjReader("inputs\icosahedron.obj")
     luzes = [Luz(posicao=Ponto(-5, 5, 5), intensidade=Vetor(255, 255, 255)),
              #Luz(posicao=Ponto(5, -5, -5), intensidade=Vetor(255, 255, 255))
              ]
