@@ -7,6 +7,47 @@ from affine_transformation import TransformacaoAfim
 from illumination import phong, Luz
 from ray import Ray
 import numpy as np
+import math
+from obj_reader import Face 
+from objects import Material
+
+# Em main.py
+def criar_toro(raio_maior, raio_menor, num_segmentos_maior, num_segmentos_menor):
+    """
+    Gera os vértices e as faces de um toro (donut) como uma malha de triângulos.
+    """
+    vertices = []
+    faces = []
+
+    # 1. Gerar os Vértices
+    for i in range(num_segmentos_maior):
+        phi = (i / num_segmentos_maior) * 2 * math.pi
+        for j in range(num_segmentos_menor):
+            theta = (j / num_segmentos_menor) * 2 * math.pi
+            x = (raio_maior + raio_menor * math.cos(theta)) * math.cos(phi)
+            y = (raio_maior + raio_menor * math.cos(theta)) * math.sin(phi)
+            z = raio_menor * math.sin(theta)
+            vertices.append(Ponto(x, y, z))
+
+    # 2. Conectar os Vértices para Criar as Faces
+    for i in range(num_segmentos_maior):
+        for j in range(num_segmentos_menor):
+            v1_idx = i * num_segmentos_menor + j
+            v2_idx = ((i + 1) % num_segmentos_maior) * num_segmentos_menor + j
+            v3_idx = ((i + 1) % num_segmentos_maior) * num_segmentos_menor + ((j + 1) % num_segmentos_menor)
+            v4_idx = i * num_segmentos_menor + ((j + 1) % num_segmentos_menor)
+
+            # CORREÇÃO APLICADA AQUI: Invertemos os dois últimos vértices
+            face1 = Face()
+            face1.vertice_indices = [v1_idx, v4_idx, v2_idx]
+            
+            face2 = Face()
+            face2.vertice_indices = [v2_idx, v4_idx, v3_idx]
+            
+            faces.append(face1)
+            faces.append(face2)
+            
+    return vertices, faces
 
 def cor_para_ppm(cor):
     # Garante que os valores estejam entre 0 e 255 e converte para int
@@ -44,11 +85,39 @@ def renderizar_cena(camera, objetos, luzes, filename):
     return imagem
 
 def main():
-    reader = ObjReader("inputs\icosahedron.obj")
+    reader = ObjReader("inputs/icosahedron.obj")
     luzes = [Luz(posicao=Ponto(-5, 5, 5), intensidade=Vetor(255, 255, 255)),
              #Luz(posicao=Ponto(5, -5, -5), intensidade=Vetor(255, 255, 255))
              ]
 
+    # --- INÍCIO DA ADIÇÃO DO TORO ---
+
+    # 1. Gerar a geometria do Toro (código de criar_toro continua o mesmo)
+    vertices_toro, faces_toro = criar_toro(raio_maior=3, raio_menor=1, num_segmentos_maior=12, num_segmentos_menor=6)
+
+    # 2. Criar um Material para o Toro (VERSÃO CORRIGIDA)
+    material_toro = Material(
+        cor=Vetor(255, 215, 0),  # Cor dourada
+        n=50,                     # Brilho focado
+        kd=Vetor(0.8, 0.8, 0.8),  # Coeficiente Difuso
+        ks=Vetor(0.9, 0.9, 0.9),  # Coeficiente Especular (brilho branco forte)
+        ka=Vetor(0.2, 0.2, 0.2),  # Coeficiente Ambiente
+        kr=Vetor(1, 1, 1),        # Reflexão (ajuste conforme desejado)
+        kt=0.0                    # Transparência (0 = opaco)
+    )
+
+    # 3. Atribuir o material a cada face gerada.
+    for face in faces_toro:
+        face.ka = material_toro.ka
+        face.kd = material_toro.kd
+        face.ks = material_toro.ks
+        face.ns = material_toro.coeficienteRugosidade
+        # Como não temos kr e kt, não os atribuímos aqui.
+
+    # 4. Criar o objeto MalhaT com os vértices e faces do toro.
+    toro = MalhaT(faces=faces_toro, vertices=vertices_toro)
+
+    # --- FIM DA ADIÇÃO DO TORO ---
     # Cria objetos
     esfera = Esfera(raio=2, 
                     centro=Ponto(5, 2, -4), 
@@ -99,17 +168,18 @@ def main():
     vertices = reader.get_vertices()
     malha = MalhaT(faces=faces, vertices=vertices)
 
-    # Configura a câmera
+     # Configuração da Câmera (sugiro afastar um pouco para ver todos os objetos)
     camera = Camera(
-        C=Ponto(-7, 0, 0),      # Posição da camera 
-        M=malha.centro,      # Mira (olhando para origem)
+        C=Ponto(10, 3, 15),      # Posição da câmera (em frente ao toro, afastada no Z)
+        M=Ponto(0, 0, 0),       # Mira para o centro da cena
         Vup=Vetor(0, 1, 0),
-        d=2,                     # Campo de visao 
-        Vres=300,
-        Hres=300
+        d=2,
+        Vres=100,
+        Hres=100
     )
 
-    objetos = [malha, esfera, esfera2, plano] 
+
+    objetos = [toro] 
     renderizar_cena(camera, objetos, luzes, "output_original.ppm")
 
     #Transformacao afim
