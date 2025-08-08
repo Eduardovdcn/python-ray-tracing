@@ -10,14 +10,15 @@ class Luz:
         self.intensidade = intensidade 
 
 
-def getDifusao(N, L, luz, KD, OD):
+def getDifusao(N, L, luz, KD, cor_material):
     cossenoNL = max(N.produto_escalar(L), 0.0)
-    # Otimização: evitar multiplicações desnecessárias quando cossenoNL = 0
     if cossenoNL == 0.0:
         return Vetor(0, 0, 0)
-    return Vetor(KD.x * luz.intensidade.x * cossenoNL * OD.x,
-                 KD.y * luz.intensidade.y * cossenoNL * OD.y,
-                 KD.z * luz.intensidade.z * cossenoNL * OD.z)
+    return Vetor(
+        KD.x * luz.intensidade.x * cossenoNL * cor_material.x / 255,
+        KD.y * luz.intensidade.y * cossenoNL * cor_material.y / 255,
+        KD.z * luz.intensidade.z * cossenoNL * cor_material.z / 255
+    )
 
 
 def getEspecular(V, R, luz, KS, COEF):
@@ -163,9 +164,11 @@ def phong(luzes, material, raio, normal, pontoIntersecao, objetos, profundidade)
     V = (raio.origem.__sub__(pontoIntersecao)).normalizar()
     
     # Componente ambiente
-    ambiente = Vetor(KA.x * IA[0] * OD.x,
-                     KA.y * IA[1] * OD.y,
-                     KA.z * IA[2] * OD.z)
+    ambiente = Vetor(
+        KA.x * IA[0] * material.cor.x / 255,
+        KA.y * IA[1] * material.cor.y / 255,
+        KA.z * IA[2] * material.cor.z / 255
+    )
     difusao = Vetor(0, 0, 0)
     especular = Vetor(0, 0, 0)
 
@@ -174,7 +177,7 @@ def phong(luzes, material, raio, normal, pontoIntersecao, objetos, profundidade)
         L = (luz.posicao.__sub__(pontoIntersecao)).normalizar()
         R = N.mult_escalar(2 * N.produto_escalar(L)).__sub__(L)
         
-        difusao = difusao.soma(getDifusao(N, L, luz, KD, OD))
+        difusao = difusao.soma(getDifusao(N, L, luz, KD, material.cor))
         especular = especular.soma(getEspecular(V, R, luz, KS, COEF))
     
     # Componente reflexiva 

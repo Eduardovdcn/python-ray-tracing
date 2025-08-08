@@ -7,6 +7,8 @@ class Face:
     def __init__(self):
         self.vertice_indices = [0, 0, 0]
         self.normal_indices = [0, 0, 0]
+        # Adicionamos um atributo de cor para armazenar a cor do material
+        self.cor = Vetor(1, 1, 1) # Cor branca por padrão
         self.ka = Vetor(0, 0, 0)
         self.kd = Vetor(0, 0, 0)
         self.ks = Vetor(0, 0, 0)
@@ -14,6 +16,8 @@ class Face:
         self.ns = 0
         self.ni = 0
         self.d = 0
+        self.kr = Vetor(0, 0, 0)
+        self.kt = 0
 
 class ObjReader:
     '''
@@ -70,6 +74,11 @@ class ObjReader:
                 elif line.startswith('f '):
                     face = Face()
                     face.vertice_indices = list(map(lambda x: int(x.split('/')[0]) - 1, line[2:].split()))
+                    
+                    # Atribui a cor do material do arquivo .mtl
+                    # Multiplicamos por 255 porque o .mtl armazena cores em [0, 1]
+                    face.cor = self.cur_material.kd.mult_escalar(255)
+                    
                     face.ka = self.cur_material.ka
                     face.kd = self.cur_material.kd
                     face.ks = self.cur_material.ks
