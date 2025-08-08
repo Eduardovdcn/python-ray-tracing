@@ -7,7 +7,6 @@ class Face:
     def __init__(self):
         self.vertice_indices = [0, 0, 0]
         self.normal_indices = [0, 0, 0]
-        # Adicionamos um atributo de cor para armazenar a cor do material
         self.cor = Vetor(1, 1, 1) # Cor branca por padrão
         self.ka = Vetor(0, 0, 0)
         self.kd = Vetor(0, 0, 0)

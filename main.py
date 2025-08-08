@@ -84,17 +84,17 @@ def main():
 
     # Cria objetos
     esfera = Esfera(raio=1, 
-                    centro=Ponto(5, 5, 0), 
+                    centro=Ponto(0, 0, 0), 
                     cor=Vetor(255, 0, 0), 
                     n=20, 
-                    kd=Vetor(0.85, 0.85, 0.85), 
+                    ka=Vetor(0.5, 0.5, 0.5),
+                    kd=Vetor(1, 0, 0),
                     ks=Vetor(0.5, 0.5, 0.5), 
-                    ka=Vetor(0.4, 0.3, 0.3),
                     kr=Vetor(0.1, 0.1, 0.1),
                     kt=0
                     )
     
-    plano = Plano(ponto=Ponto(0, -1.5, 0), 
+    plano = Plano(ponto=Ponto(0, -4, 0), 
                   vetorNormal=Vetor(0, 1, 0), 
                   cor=Vetor(200, 200, 200), 
                   n=1000, 
@@ -109,7 +109,7 @@ def main():
     vertices_toro, faces_toro = criar_toro(raio_maior=3, raio_menor=1, num_segmentos_maior=12, num_segmentos_menor=8)
     
     material_toro = Material(
-        cor=Vetor(255, 215, 0),  # Cor dourada
+        cor=Vetor(255, 215, 0),
         n=50,
         kd=Vetor(0.7, 0.5, 0.1),
         ks=Vetor(0.9, 0.9, 0.9),
@@ -144,15 +144,15 @@ def main():
 
     # Configura a câmera
     camera = Camera(
-        C=Ponto(0, 5, -15),      # Posição da camera 
+        C=Ponto(-5, 5, -15),      # Posição da camera 
         M=Ponto(0, 0, 0),      # Mira (olhando para origem)
         Vup=Vetor(0, 1, 0),
         d=2,                     # Campo de visao 
-        Vres=200,
-        Hres=200
+        Vres=100,
+        Hres=100
     )
 
-    objetos = [toro] 
+    objetos = [esfera, plano, toro] 
     renderizar_cena(camera, objetos, luzes, "output.ppm")
 
 if __name__ == "__main__":
