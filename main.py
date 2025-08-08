@@ -129,6 +129,10 @@ def main():
         face.kt = material_toro.kt
         
     toro = MalhaT(faces=faces_toro, vertices=vertices_toro)
+    
+    transformador = TransformacaoAfim()
+    #toro = transformador.rotacaoY(45, toro)  # Gira 45 graus em torno do eixo Y
+    #toro = transformador.translacao(0, 0, 5, toro)          # Depois translada
     # --- FIM DA CRIAÇÃO DO TORO ---
 
 
@@ -138,7 +142,6 @@ def main():
     malha = MalhaT(faces=faces_icosaedro, vertices=vertices_icosaedro)
     
     # Aplica uma transformação para mover o icosaedro
-    transformador = TransformacaoAfim()
     malha_transformada = transformador.translacao(5, 0, 5, malha)
 
 
